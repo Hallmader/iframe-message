@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="stylesheets/screen.css">
+</head>
+
+<body>
+    <header>
+        <h2>iframe-message Demo<span>By Hallmader</span></h2>
+    </header>
+    <section class="main">
+        <section class="middle">
+            <div class="inner">
+                <div class="result">
+                    <h2>您今天还没有任何任务。</h2>
+                    <div class="result-show">
+                        <h2></h2>
+                        <p></p>
+                        <p></p>
+                    </div>
+                </div>
+                <iframe class="task-window" src="templates/task.html"></iframe>
+            </div>
+        </section>
+        <aside class="left">
+            <div class="controller-list">
+                <ul>
+                    <li>
+                        <a href="javascript:;">Good</a>
+                        <p>如果您今天心情还不错……</p>
+                    </li>
+                    <li>
+                        <a href="javascript:;">Boring</a>
+                        <p>也许今天是枯燥无聊的一天……</p>
+                    </li>
+                    <li>
+                        <a href="javascript:;">Angry</a>
+                        <p>我觉得今天小动物应该尽量远离您……</p>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        <aside class="right">
+            <div class="window-ctrl">
+                <ul>
+                    <li class="btn-login">
+                        <a href="javascript:;">登录后访问</a>
+                    </li>
+                    <li class="btn-intro">
+                        <a class="msgone" href="javascript:;">子页1</a>
+                        <a class="msgtwo" href="javascript:;">子页2</a>
+                        <a class="msgthree" href="javascript:;">子页3</a>
+                    </li>
+                    <li class="btn-changeStyle">
+                        <a href="javascript:;">子页主题切换</a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </section>
+    <footer>
+        <div class="feeling-today">
+            <ul>
+                <li><img src="images/good.png"></li>
+                <li><img src="images/good.png"></li>
+                <li><img src="images/good.png"></li>
+                <li><img src="images/good.png"></li>
+                <li><img src="images/good.png"></li>
+            </ul>
+            <h2>如果心情好的话，就要努力工作哦。</h2>
+        </div>
+    </footer>
+    <script src="js/innerMsg.js"></script>
+    <script src="js/msg.js"></script>
+</body>
+<script>
+//建立发布对象
+var messageListener = new MessageListener('parent');
+//获取各元素
+var mainTitle = document.querySelector('header h2');
+
+var task = document.querySelector('.result-show');
+var taskTitle = document.querySelector('.result h2');
+
+var loginBtn = document.querySelector('.btn-login a');
+var page1Btn = document.querySelector('.msgone');
+var page2Btn = document.querySelector('.msgtwo');
+var page3Btn = document.querySelector('.msgthree');
+var changeStyleBtn = document.querySelector('.btn-changeStyle');
+//预设值登录窗口、窗口1/2/3
+var loginWindow, page1, page2, page3;
+//更换主体的判断点
+var styleFlag = true;
+//点击开启各视窗，并保存对应的window对象，同时建立发送目标窗口
+loginBtn.onclick = function() {
+    loginWindow = window.open('templates/login.html', 'loginWindow', 'width=400,height=400,status=yes,resizable=yes');
+};
+page1Btn.onclick = function() {
+    page1 = window.open('templates/page1.html', 'page1', 'width=800,height=800,status=yes,resizable=yes');
+    messageListener.addMsgTarget('page1', page1);
+};
+page2Btn.onclick = function() {
+    page2 = window.open('templates/page2.html', 'page2', 'width=800,height=800,status=yes,resizable=yes');
+    messageListener.addMsgTarget('page2', page2);
+};
+page3Btn.onclick = function() {
+    page3 = window.open('templates/page3.html', 'page3', 'width=800,height=800,status=yes,resizable=yes');
+    messageListener.addMsgTarget('page3', page3);
+};
+
+//发送主题更换的信号
+function sendToChange(id1, id2, id3) {
+    if (styleFlag) {
+        if (page1) {
+            messageListener.targets[id1].sendMsg('otherStyle');
+        }
+        if (page2) {
+            messageListener.targets[id2].sendMsg('otherStyle');
+        }
+        if (page3) {
+            messageListener.targets[id3].sendMsg('otherStyle');
+        }
+        styleFlag = false;
+    } else {
+        if (page1) {
+            messageListener.targets[id1].sendMsg('mainStyle');
+        }
+        if (page2) {
+            messageListener.targets[id2].sendMsg('mainStyle');
+        }
+        if (page3) {
+            messageListener.targets[id3].sendMsg('mainStyle');
+        }
+        styleFlag = true;
+    }
+}
+
+changeStyleBtn.onclick = function() {
+    sendToChange('page1', 'page2', 'page3');
+};
+//监听iframe与登录视窗发来的信息,根据信息体判断行为
+messageListener.listenToMsg(function(msg) {
+    if (Object.prototype.toString.call(msg).slice(8, -1) === "Array") {
+        taskTitle.innerHTML = "";
+        task.style.display = "inline-block";
+        task.childNodes[1].innerHTML = "任务名称：" + msg[0];
+        task.childNodes[3].innerHTML = "完成时间：" + msg[1];
+        task.childNodes[5].innerHTML = "合作人员：" + msg[2];
+    } else if (msg === "reset") {
+        taskTitle.innerHTML = "您今天还没有任何任务。";
+        task.style.display = "none";
+    } else if (msg === "logged in") {
+        mainTitle.innerHTML = "您已登录！欢迎使用任务管理系统（Demo版本），祝您工作愉快！";
+    }
+});
+</script>
+
+</html>
