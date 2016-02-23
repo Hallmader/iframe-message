@@ -144,6 +144,7 @@ changeStyleBtn.onclick = function() {
 //监听iframe与登录视窗发来的信息,根据信息体判断行为
 messageListener.listenToMsg(function(msg) {
     if (Object.prototype.toString.call(msg).slice(8, -1) === "Array") {
+        localStorage.text = msg;
         taskTitle.innerHTML = "";
         task.style.display = "inline-block";
         task.childNodes[1].innerHTML = "任务名称：" + msg[0];
@@ -152,10 +153,24 @@ messageListener.listenToMsg(function(msg) {
     } else if (msg === "reset") {
         taskTitle.innerHTML = "您今天还没有任何任务。";
         task.style.display = "none";
+        localStorage.text="";
     } else if (msg === "logged in") {
         mainTitle.innerHTML = "您已登录！欢迎使用任务管理系统（Demo版本），祝您工作愉快！";
     }
 });
+//调用本地存储——每次查看本地存储中text关键字，若存在，直接赋值改动
+//不存在，则不执行。同时每次按下重置按钮，本地存储数据清空
+//这样可以确保每次打开浏览器，任务列表都是保存下来的
+window.onload = function() {
+    if (localStorage.text) {
+        var msg = localStorage.text.split(',');
+        taskTitle.innerHTML = "";
+        task.style.display = "inline-block";
+        task.childNodes[1].innerHTML = "任务名称：" + msg[0];
+        task.childNodes[3].innerHTML = "完成时间：" + msg[1];
+        task.childNodes[5].innerHTML = "合作人员：" + msg[2];
+    }
+}
 </script>
 
 </html>
